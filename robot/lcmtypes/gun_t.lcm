@@ -1,6 +1,0 @@
-struct gun_t
-{
-    int64_t timestamp;
-
-    boolean fire;
-}
