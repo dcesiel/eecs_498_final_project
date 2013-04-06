@@ -12,17 +12,17 @@ import lcm.lcm.*;
 public final class drive_t implements lcm.lcm.LCMEncodable
 {
     public long timestamp;
-    public int front_motor;
-    public int back_motor;
-    public int right_motor;
-    public int left_motor;
+    public double front_motor;
+    public double back_motor;
+    public double right_motor;
+    public double left_motor;
  
     public drive_t()
     {
     }
  
     public static final long LCM_FINGERPRINT;
-    public static final long LCM_FINGERPRINT_BASE = 0xa32fa1c39f0affd0L;
+    public static final long LCM_FINGERPRINT_BASE = 0x4f739894784fde1aL;
  
     static {
         LCM_FINGERPRINT = _hashRecursive(new ArrayList<Class<?>>());
@@ -50,13 +50,13 @@ public final class drive_t implements lcm.lcm.LCMEncodable
     {
         outs.writeLong(this.timestamp); 
  
-        outs.writeInt(this.front_motor); 
+        outs.writeDouble(this.front_motor); 
  
-        outs.writeInt(this.back_motor); 
+        outs.writeDouble(this.back_motor); 
  
-        outs.writeInt(this.right_motor); 
+        outs.writeDouble(this.right_motor); 
  
-        outs.writeInt(this.left_motor); 
+        outs.writeDouble(this.left_motor); 
  
     }
  
@@ -84,13 +84,13 @@ public final class drive_t implements lcm.lcm.LCMEncodable
     {
         this.timestamp = ins.readLong();
  
-        this.front_motor = ins.readInt();
+        this.front_motor = ins.readDouble();
  
-        this.back_motor = ins.readInt();
+        this.back_motor = ins.readDouble();
  
-        this.right_motor = ins.readInt();
+        this.right_motor = ins.readDouble();
  
-        this.left_motor = ins.readInt();
+        this.left_motor = ins.readDouble();
  
     }
  

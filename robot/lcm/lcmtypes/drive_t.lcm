@@ -2,8 +2,8 @@ struct drive_t
 {
     int64_t timestamp;
 
-    int32_t front_motor;
-    int32_t back_motor;
-    int32_t right_motor;
-    int32_t left_motor;
+    double front_motor;
+    double back_motor;
+    double right_motor;
+    double left_motor;
 }
