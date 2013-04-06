@@ -1,5 +1,4 @@
 package robot.lcm;
-
 import java.awt.*;
 import java.io.*;
 import static java.lang.System.out;
@@ -10,7 +9,7 @@ import lcm.lcm.*;
 import april.jmat.*;
 import april.util.*;
 import april.vis.*;
-import lcmtypes.*;
+import lcm.lcmtypes.*;
 import april.*;
 
 public class MotorPublisher
@@ -23,6 +22,7 @@ public class MotorPublisher
         double frontMotor;
         double backMotor;
     }
+
     LCM lcm;
 
     public MotorPublisher(){

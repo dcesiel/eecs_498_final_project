@@ -11,10 +11,12 @@ import april.jmat.geom.*;
 import april.jcam.*;
 
 import april.util.*;
+import april.tag.*;
 
 public class TagTest
 {
-    JFrame jf;
+    static final double APRIL_CODE_PIXEL_HEIGHT = 244;
+    static final double PIXEL_RANGE = 20;
 
     ImageSource is;
 
@@ -60,15 +62,6 @@ public class TagTest
 
         detector = new TagDetector(tf);
 
-        //TODO: Eliminate when done testing/////////////////////////////////////
-        jf = new JFrame("TagTest");
-        jf.setLayout(new BorderLayout());
-
-        jf.setSize(800,600);
-        jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        jf.setVisible(true);
-        /////////////////////////////////////////////////////////////////////////
-
         ImageSourceFormat ifmt = is.getCurrentFormat();
 
         new RunThread().start();
@@ -109,6 +102,9 @@ public class TagTest
             detector.debugSamples   = vw.getBuffer("samples");
             detector.debugLabels    = vw.getBuffer("labels");*/
 
+            //MotorPublisher mp = new MotorPublisher();
+            //MotorSpeed ms = new MotorSpeed();
+
             while (true) {
                 FrameData frmd = is.getFrame();
                 if (frmd == null)
@@ -130,93 +126,23 @@ public class TagTest
                 ArrayList<TagDetection> detections = detector.process(im, new double[] {im.getWidth()/2.0, im.getHeight()/2.0});
                 double dt = tic.toc();
 
-                if (detector.debugInput!=null)
-                    vbInput.addBack(new VisDepthTest(false, new VisLighting(false, new VzImage(detector.debugInput, VzImage.FLIP))));
-                vbInput.swap();
-
-                if (detector.debugSegmentation!=null)
-                    vbSegmentation.addBack(new VisDepthTest(false, new VisLighting(false, new VzImage(detector.debugSegmentation, VzImage.FLIP))));
-                vbSegmentation.swap();
-
-
-                vbOriginal.addBack(new VisDepthTest(false, new VisLighting(false, new VzImage(im, VzImage.FLIP))));
-                vbOriginal.swap();
-
-                if (detector.debugTheta != null)
-                    vbThetas.addBack(new VisDepthTest(false, new VisLighting(false, new VzImage(detector.debugTheta, VzImage.FLIP))));
-                vbThetas.swap();
-
-                if (detector.debugMag != null)
-                    vbMag.addBack(new VisDepthTest(false, new VisLighting(false, new VzImage(detector.debugMag, VzImage.FLIP))));
-                vbMag.swap();
-
-                vbClock.addBack(new VisPixCoords(VisPixCoords.ORIGIN.BOTTOM_RIGHT,
-                                                        new VzText(VzText.ANCHOR.BOTTOM_RIGHT,
-                                                                    String.format("<<cyan>>%8.2f ms", dt*1000))));
-                vbClock.swap();
-
                 for (TagDetection d : detections) {
-                    double p0[] = d.interpolate(-1,-1);
-                    double p1[] = d.interpolate(1,-1);
-                    double p2[] = d.interpolate(1,1);
-                    double p3[] = d.interpolate(-1,1);
-
-                    double ymax = Math.max(Math.max(p0[1], p1[1]), Math.max(p2[1], p3[1]));
-
-                    vbDetections.addBack(new VisChain(LinAlg.translate(0, im.getHeight(), 0),
-                                                      LinAlg.scale(1, -1, 1),
-                                                      new VzLines(new VisVertexData(p0, p1, p2, p3, p0),
-                                                                  VzLines.LINE_STRIP,
-                                                                  new VzLines.Style(Color.blue, 4)),
-                                                      new VzLines(new VisVertexData(p0,p1),
-                                                                  VzLines.LINE_STRIP,
-                                                                  new VzLines.Style(Color.green, 4)),
-                                                      new VzLines(new VisVertexData(p0, p3),
-                                                                  VzLines.LINE_STRIP,
-                                                                  new VzLines.Style(Color.red, 4)),
-                                                      new VisChain(LinAlg.translate(d.cxy[0], ymax + 20, 0), //LinAlg.translate(d.cxy[0],d.cxy[1],0),
-                                                                   LinAlg.scale(1, -1, 1),
-                                                                   LinAlg.scale(.25, .25, .25),
-                                                                   new VzText(VzText.ANCHOR.CENTER,
-                                                                              String.format("<<sansserif-48,center,yellow,dropshadow=#88000000>>id %3d\n(err=%d)\n", d.id, d.hammingDistance)))));
-
-                    // You need to adjust the tag size (measured
-                    // across the whole tag in meters and the focal
-                    // length.
-                    double tagsize_m = 0.216;
-                    double f = 485.6;
-                    double aspect = 752.0 / 480.0;
-//                    double M[][] = CameraUtil.homographyToPose(f, f, tagsize_m, d.homography);
-                    double M[][] = CameraUtil.homographyToPose(f, f, im.getWidth()/2, im.getHeight()/2, d.homography);
-                    M = CameraUtil.scalePose(M, 2.0, tagsize_m);
-
-                    BufferedImage tfimg = tf.makeImage(d.id);
-                    double vertices[][] = {{ -tagsize_m/2, -tagsize_m/2, 0},
-                                           { tagsize_m/2, -tagsize_m/2, 0},
-                                           { tagsize_m/2,  tagsize_m/2, 0},
-                                           { -tagsize_m/2,  tagsize_m/2, 0}};
-
-
-                    // same order as in vertices, but remember y flip.
-                    double texcoords [][] = { { 0, 1},
-                                              { 1, 1},
-                                              { 1, 0},
-                                              { 0, 0 } };
-
-                    vbTag3D.addBack(new VisChain(LinAlg.rotateX(Math.PI/2),
-                                                 M,
-                                                 new VzImage(new VisTexture(tfimg, VisTexture.NO_MIN_FILTER),
-                                                             vertices, texcoords, null)));
+                    System.out.print("CenterX: " + d.cxy[0] + "   CenterY: " + d.cxy[1]);
+                    double yPix = d.cxy[1];
+                    if (yPix < (APRIL_CODE_PIXEL_HEIGHT - PIXEL_RANGE)){
+                        //ms.rightMotor = -1;
+                        //ms.leftMotor = -1;
+                        System.out.println("   Driving Backwards!");
+                    }
+                    else if (yPix > (APRIL_CODE_PIXEL_HEIGHT - PIXEL_RANGE)){
+                        //ms.rightMotor = 1;
+                        //ms.leftMotor = 1;
+                        System.out.println("   Driving Forwards!");
+                    }
+                    else{
+                        System.out.println("   In a good range!");
+                    }
                 }
-
-                vbTag3D.addBack(new VisChain(LinAlg.rotateX(Math.PI/2),
-                                             new VzAxes()));
-                vbTag3D.addBack(new VisChain(LinAlg.rotateZ(Math.PI/2),
-                                             LinAlg.scale(.25, .25, .25),
-                                             new VzCamera()));
-                vbTag3D.swap();
-
-                vbDetections.swap();
             }
         }
     }
