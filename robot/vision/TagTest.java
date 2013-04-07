@@ -12,6 +12,8 @@ import april.jcam.*;
 
 import april.util.*;
 import april.tag.*;
+import robot.lcm.*;
+
 
 public class TagTest
 {
@@ -102,8 +104,8 @@ public class TagTest
             detector.debugSamples   = vw.getBuffer("samples");
             detector.debugLabels    = vw.getBuffer("labels");*/
 
-            //MotorPublisher mp = new MotorPublisher();
-            //MotorSpeed ms = new MotorSpeed();
+            MotorPublisher mp = new MotorPublisher();
+            MotorSpeed ms = new MotorSpeed();
 
             while (true) {
                 FrameData frmd = is.getFrame();

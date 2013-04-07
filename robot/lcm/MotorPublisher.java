@@ -9,19 +9,12 @@ import lcm.lcm.*;
 import april.jmat.*;
 import april.util.*;
 import april.vis.*;
-import lcm.lcmtypes.*;
+import lcmtypes.*;
 import april.*;
+import robot.lcm.*;
 
 public class MotorPublisher
 {
-    public class MotorSpeed
-    {
-        //All values are between -1.0 and 1.0 with 0 = stop
-        double rightMotor;
-        double leftMotor;
-        double frontMotor;
-        double backMotor;
-    }
 
     LCM lcm;
 

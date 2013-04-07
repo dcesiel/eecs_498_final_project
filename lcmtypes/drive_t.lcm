@@ -1,0 +1,9 @@
+struct drive_t
+{
+    int64_t timestamp;
+
+    double front_motor;
+    double back_motor;
+    double right_motor;
+    double left_motor;
+}
