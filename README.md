@@ -1,3 +1,3 @@
 eecs_498_final_project
 ======================
-Compile Arduino library:  javac -cp /usr/share/java/RXTXcomm.jar Serial.java Arduino.java
+Move upstart script in robot/lcm to /var/init/
