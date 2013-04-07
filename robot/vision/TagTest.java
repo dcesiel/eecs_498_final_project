@@ -132,13 +132,13 @@ public class TagTest
                     System.out.print("CenterX: " + d.cxy[0] + "   CenterY: " + d.cxy[1]);
                     double yPix = d.cxy[1];
                     if (yPix < (APRIL_CODE_PIXEL_HEIGHT - PIXEL_RANGE)){
-                        //ms.rightMotor = -1;
-                        //ms.leftMotor = -1;
+                        ms.rightMotor = -1;
+                        ms.leftMotor = -1;
                         System.out.println("   Driving Backwards!");
                     }
                     else if (yPix > (APRIL_CODE_PIXEL_HEIGHT - PIXEL_RANGE)){
-                        //ms.rightMotor = 1;
-                        //ms.leftMotor = 1;
+                        ms.rightMotor = 1;
+                        ms.leftMotor = 1;
                         System.out.println("   Driving Forwards!");
                     }
                     else{
