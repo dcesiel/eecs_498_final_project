@@ -1,3 +1,5 @@
+package robot.vision;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
@@ -144,6 +146,7 @@ public class TagTest
                     else{
                         System.out.println("   In a good range!");
                     }
+                    mp.publish(ms);
                 }
             }
         }

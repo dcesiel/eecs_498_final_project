@@ -26,7 +26,7 @@ public class MotorPublisher
         }
     }
 
-    void publish(MotorSpeed motorSpeed){
+    public void publish(MotorSpeed motorSpeed){
 	    long now = TimeUtil.utime();
         drive_t cmd = new drive_t();
         cmd.timestamp = now;
