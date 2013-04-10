@@ -39,7 +39,8 @@ def handler(channel, data):
         pin3.write(msg.left_motor)
         pin2.write(0)
     else:
-        pin3.write(-msg.left_motor)
+        print("Working")
+        pin3.write(1+msg.left_motor)
         pin2.write(1)
 
     #Right Motor Logic
@@ -47,7 +48,7 @@ def handler(channel, data):
         pin5.write(msg.right_motor)
         pin4.write(0)
     else:
-        pin5.write(-msg.right_motor)
+        pin5.write(1+msg.right_motor)
         pin4.write(1)
 
     #Back Motor Logic
@@ -55,7 +56,7 @@ def handler(channel, data):
         pin9.write(msg.back_motor)
         pin8.write(0)
     else:
-        pin9.write(-msg.back_motor)
+        pin9.write(1+msg.back_motor)
         pin8.write(1)
 
     #Front Motor Logic
@@ -63,7 +64,7 @@ def handler(channel, data):
         pin11.write(msg.front_motor)
         pin12.write(0)
     else:
-        pin11.write(-msg.front_motor)
+        pin11.write(1+msg.front_motor)
         pin12.write(1)
 
 

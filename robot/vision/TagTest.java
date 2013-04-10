@@ -20,7 +20,8 @@ import robot.lcm.*;
 public class TagTest
 {
     static final double APRIL_CODE_PIXEL_HEIGHT = 244;
-    static final double PIXEL_RANGE = 20;
+    static final double APRIL_CODE_PIXEL_WIDTH = 350;
+    static final double PIXEL_RANGE = 50;
 
     ImageSource is;
 
@@ -96,7 +97,7 @@ public class TagTest
             detector.magThresh = 12000.0;
             detector.thetaThresh = 100.0;
             //Lower values are faster
-            detector.WEIGHT_SCALE = 30;
+            detector.WEIGHT_SCALE = 60;
             detector.segDecimate = true;
             detector.debug = false;
 
@@ -109,43 +110,64 @@ public class TagTest
             MotorPublisher mp = new MotorPublisher();
             MotorSpeed ms = new MotorSpeed();
 
+            FrameData frmd;
+            BufferedImage im;
             while (true) {
-                FrameData frmd = is.getFrame();
+                frmd = null;
+                for (int i = 0; i < 10; i++){
+                    frmd = is.getFrame();
+                }
                 if (frmd == null)
                     continue;
 
-                BufferedImage im = ImageConvert.convertToImage(frmd);
+                im = ImageConvert.convertToImage(frmd);
 
                 //Not sure what this does but this is the number set in the
                 //test program and it works so I'm going to use it
                 tf.setErrorRecoveryBits(1);
 
-                //TODO: Move this into a debug check (measures execution time)
-                Tic tic = new Tic();
 
                 //TODO: Use this detection array to get location of tags
                 //Import TagDetection class fields include:
                 //cxy: (center of tag in pixel in tag coordinates)
                 //rotation: (How many 90 degree rotations to align with code)
                 ArrayList<TagDetection> detections = detector.process(im, new double[] {im.getWidth()/2.0, im.getHeight()/2.0});
-                double dt = tic.toc();
 
                 for (TagDetection d : detections) {
                     System.out.print("CenterX: " + d.cxy[0] + "   CenterY: " + d.cxy[1]);
                     double yPix = d.cxy[1];
+                    double xPix = d.cxy[0];
                     if (yPix < (APRIL_CODE_PIXEL_HEIGHT - PIXEL_RANGE)){
                         ms.rightMotor = -1;
                         ms.leftMotor = -1;
-                        System.out.println("   Driving Backwards!");
                     }
-                    else if (yPix > (APRIL_CODE_PIXEL_HEIGHT - PIXEL_RANGE)){
+                    else if (yPix > (APRIL_CODE_PIXEL_HEIGHT + PIXEL_RANGE)){
                         ms.rightMotor = 1;
                         ms.leftMotor = 1;
-                        System.out.println("   Driving Forwards!");
                     }
                     else{
+                        ms.rightMotor = 0;
+                        ms.leftMotor = 0;
+                    }
+
+
+
+                    if (xPix < (APRIL_CODE_PIXEL_WIDTH - PIXEL_RANGE)){
+                        ms.frontMotor = -1;
+                        ms.backMotor = -1;
+                        System.out.println("   Driving right!");
+                    }
+                    else if (xPix > (APRIL_CODE_PIXEL_WIDTH + PIXEL_RANGE)){
+                        ms.frontMotor = 1;
+                        ms.backMotor = 1;
+                        System.out.println("   Driving left!");
+                    }
+                    else{
+                        ms.frontMotor = 0;
+                        ms.backMotor = 0;
                         System.out.println("   In a good range!");
                     }
+                    mp.publish(ms);
                     mp.publish(ms);
                 }
             }
