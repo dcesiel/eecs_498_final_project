@@ -6,6 +6,7 @@ import java.awt.image.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
+import java.lang.Math;
 
 import april.jmat.*;
 import april.jmat.geom.*;
@@ -22,6 +23,7 @@ public class TagTest
     static final double APRIL_CODE_PIXEL_HEIGHT = 244;
     static final double APRIL_CODE_PIXEL_WIDTH = 350;
     static final double PIXEL_RANGE = 50;
+    static final double PIXEL_RANGE_WIDTH = 75;
 
     ImageSource is;
 
@@ -70,6 +72,8 @@ public class TagTest
         ImageSourceFormat ifmt = is.getCurrentFormat();
 
         new RunThread().start();
+        new RunThread().start();
+        new RunThread().start();
 
     }
 
@@ -87,7 +91,7 @@ public class TagTest
             //and tweaked with a little experimentation
 
             //The two values below are zero because segDecimate is enabled
-            //Both should be 0.8 if segDecimate is false
+            //Both should be 0.7 if segDecimate is false
             detector.segSigma = 0.0;
             detector.sigma = 0.0;
             //minMag can go from 0.001 to 0.01 the higher the number the faster
@@ -114,7 +118,7 @@ public class TagTest
             BufferedImage im;
             while (true) {
                 frmd = null;
-                for (int i = 0; i < 10; i++){
+                for (int i = 0; i < 3; i++){
                     frmd = is.getFrame();
                 }
                 if (frmd == null)
@@ -134,9 +138,18 @@ public class TagTest
                 ArrayList<TagDetection> detections = detector.process(im, new double[] {im.getWidth()/2.0, im.getHeight()/2.0});
 
                 for (TagDetection d : detections) {
-                    System.out.print("CenterX: " + d.cxy[0] + "   CenterY: " + d.cxy[1]);
                     double yPix = d.cxy[1];
                     double xPix = d.cxy[0];
+
+                    //5.2 inches to meters
+                    double tagsize_m = 0.132;
+                    //Need to figure out the proper focal length
+                    double f = 485.6;
+                    double M[][] = CameraUtil.homographyToPose(f, f, im.getWidth()/2, im.getHeight()/2, d.homography);
+                    double angle = -Math.asin(M[2][0]);
+
+                    System.out.print("Angle: " + angle);
+                    //System.out.print("CenterX: " + d.cxy[0] + "   CenterY: " + d.cxy[1]);
                     if (yPix < (APRIL_CODE_PIXEL_HEIGHT - PIXEL_RANGE)){
                         ms.rightMotor = -1;
                         ms.leftMotor = -1;
@@ -152,12 +165,12 @@ public class TagTest
 
 
 
-                    if (xPix < (APRIL_CODE_PIXEL_WIDTH - PIXEL_RANGE)){
+                    if (xPix < (APRIL_CODE_PIXEL_WIDTH - PIXEL_RANGE_WIDTH)){
                         ms.frontMotor = -1;
                         ms.backMotor = -1;
                         System.out.println("   Driving right!");
                     }
-                    else if (xPix > (APRIL_CODE_PIXEL_WIDTH + PIXEL_RANGE)){
+                    else if (xPix > (APRIL_CODE_PIXEL_WIDTH + PIXEL_RANGE_WIDTH)){
                         ms.frontMotor = 1;
                         ms.backMotor = 1;
                         System.out.println("   Driving left!");
