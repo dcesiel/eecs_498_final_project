@@ -12,6 +12,7 @@ import lcm.lcm.*;
 public final class drive_t implements lcm.lcm.LCMEncodable
 {
     public long timestamp;
+    public int lock;
     public double front_motor;
     public double back_motor;
     public double right_motor;
@@ -22,7 +23,7 @@ public final class drive_t implements lcm.lcm.LCMEncodable
     }
  
     public static final long LCM_FINGERPRINT;
-    public static final long LCM_FINGERPRINT_BASE = 0x4f739894784fde1aL;
+    public static final long LCM_FINGERPRINT_BASE = 0xca24d1bca8eeccb2L;
  
     static {
         LCM_FINGERPRINT = _hashRecursive(new ArrayList<Class<?>>());
@@ -49,6 +50,8 @@ public final class drive_t implements lcm.lcm.LCMEncodable
     public void _encodeRecursive(DataOutput outs) throws IOException
     {
         outs.writeLong(this.timestamp); 
+ 
+        outs.writeInt(this.lock); 
  
         outs.writeDouble(this.front_motor); 
  
@@ -84,6 +87,8 @@ public final class drive_t implements lcm.lcm.LCMEncodable
     {
         this.timestamp = ins.readLong();
  
+        this.lock = ins.readInt();
+ 
         this.front_motor = ins.readDouble();
  
         this.back_motor = ins.readDouble();
@@ -98,6 +103,8 @@ public final class drive_t implements lcm.lcm.LCMEncodable
     {
         lcmtypes.drive_t outobj = new lcmtypes.drive_t();
         outobj.timestamp = this.timestamp;
+ 
+        outobj.lock = this.lock;
  
         outobj.front_motor = this.front_motor;
  

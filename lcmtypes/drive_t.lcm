@@ -1,6 +1,7 @@
 struct drive_t
 {
     int64_t timestamp;
+    int32_t lock;
 
     double front_motor;
     double back_motor;

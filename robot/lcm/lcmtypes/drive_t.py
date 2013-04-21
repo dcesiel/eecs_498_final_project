@@ -7,10 +7,11 @@ import cStringIO as StringIO
 import struct
 
 class drive_t(object):
-    __slots__ = ["timestamp", "front_motor", "back_motor", "right_motor", "left_motor"]
+    __slots__ = ["timestamp", "lock", "front_motor", "back_motor", "right_motor", "left_motor"]
 
     def __init__(self):
         self.timestamp = 0
+        self.lock = 0
         self.front_motor = 0.0
         self.back_motor = 0.0
         self.right_motor = 0.0
@@ -23,7 +24,7 @@ class drive_t(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">qdddd", self.timestamp, self.front_motor, self.back_motor, self.right_motor, self.left_motor))
+        buf.write(struct.pack(">qidddd", self.timestamp, self.lock, self.front_motor, self.back_motor, self.right_motor, self.left_motor))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -37,14 +38,14 @@ class drive_t(object):
 
     def _decode_one(buf):
         self = drive_t()
-        self.timestamp, self.front_motor, self.back_motor, self.right_motor, self.left_motor = struct.unpack(">qdddd", buf.read(40))
+        self.timestamp, self.lock, self.front_motor, self.back_motor, self.right_motor, self.left_motor = struct.unpack(">qidddd", buf.read(44))
         return self
     _decode_one = staticmethod(_decode_one)
 
     _hash = None
     def _get_hash_recursive(parents):
         if drive_t in parents: return 0
-        tmphash = (0x4f739894784fde1a) & 0xffffffffffffffff
+        tmphash = (0xca24d1bca8eeccb2) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)

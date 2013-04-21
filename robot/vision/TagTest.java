@@ -22,15 +22,15 @@ public class TagTest
 {
     static final double KP_Y = 0.013;
     static final double KP_X = 0.01733;
-    static final double KP_Z = 0.01733;
+    static final double KP_Z = 0.01783; //0.01743
 
     static final double CODE_FLAT = 0.0;
     static final double APRIL_CODE_PIXEL_HEIGHT = 244;
     static final double APRIL_CODE_PIXEL_WIDTH = 350;
     
     static final double CODE_ANGLE_RANGE = 20;
-    static final double PIXEL_RANGE = 40;
-    static final double PIXEL_RANGE_WIDTH = 55;
+    static final double PIXEL_RANGE = 60;
+    static final double PIXEL_RANGE_WIDTH = 75;
 
     ImageSource is;
 
@@ -160,7 +160,7 @@ public class TagTest
                         empCounter = 0;
                     }
                 }
-
+               
                 for (TagDetection d : detections) {
                     double yPix = d.cxy[1];
                     double xPix = d.cxy[0];
@@ -183,8 +183,8 @@ public class TagTest
                         errorY = 0;
                     }
 
-                    ms.rightMotor = KP_Y * errorY;
-                    ms.leftMotor = KP_Y * errorY;
+                    ms.rightMotor = -KP_Y * errorY;
+                    ms.leftMotor = -KP_Y * errorY;
 
                     double errorX = 0;
                     //Check to see if robot is in decent range
@@ -197,7 +197,7 @@ public class TagTest
                     }
 
                     double errorZ = 0;
-                    //Check to see if robot is in decent range
+                    /*//Check to see if robot is in decent range
                     if ((angle > 100) || (angle < -100)){
                         System.out.println("Invalid Angle");
                         errorZ = 0;
@@ -211,10 +211,14 @@ public class TagTest
                             errorZ = 0;
                         }
                     }
-
-                    ms.backMotor = KP_X * errorX + KP_Z * errorZ;
-                    ms.frontMotor = KP_X * errorX - KP_Z * errorZ;
-
+                    */
+                    double zTerm = KP_Z * errorZ;
+                    if (zTerm > 0.8)
+                        zTerm = 0.8;
+                    else if (zTerm < -0.8)
+                        zTerm = 0.8;
+                    ms.backMotor = -KP_X * errorX + zTerm;
+                    ms.frontMotor = -KP_X * errorX - zTerm;
                     
                     //Check to max sure ms values are within range
                     if (ms.rightMotor > 1.0)
@@ -234,7 +238,7 @@ public class TagTest
                     if (ms.backMotor < -1.0)
                         ms.backMotor = -1.0;
 
-                    System.out.println("Error: " + errorY + "  Right: " + ms.rightMotor + "  Left: " + ms.leftMotor); 
+                    System.out.println("Error: " + errorZ + "  Front: " + ms.frontMotor + "  Back: " + ms.backMotor); 
                     mp.publish(ms);
                     mp.publish(ms);
 
