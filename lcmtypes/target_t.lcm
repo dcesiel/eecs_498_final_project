@@ -1,0 +1,6 @@
+struct target_t
+{
+    int64_t timestamp;
+    int32_t x_pix;
+    int32_t y_pix;
+}
