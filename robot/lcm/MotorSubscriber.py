@@ -45,7 +45,7 @@ def handler(channel, data):
         print("   right_motor = %s" % str(msg.right_motor))
         print("   left_motor = %s" % str(msg.left_motor))
 
-    if (lock == 0) or ((lock > 0) and (msg.lock != 0)):
+    if ( lock == False) or ( ( lock == True ) and ( msg.lock == 1 )):
         #Left Motor Logic
         if msg.left_motor >= 0:
             pin3.write(msg.left_motor)

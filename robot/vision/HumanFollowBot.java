@@ -16,7 +16,7 @@ import robot.lcm.*;
 import lcmtypes.*;
 
 
-public class HumanMatchBot{
+public class HumanFollowBot{
 
     //Image Variables
     static ImageSource is;
@@ -33,18 +33,18 @@ public class HumanMatchBot{
 
     //Targeting Variables
     static int goodFrames, badFrames, found;
-    static int TargetX;
+    static int TargetX, TargetY;
     static boolean target;
     static int wait;
     static gun_t fire;
     static LCM lcm;
-	static final double KP_X = 2;
+	static final double KP_X = 3;
+    static final double KP_Y = 8;
 
     static MotorPublisher mp;
     static MotorSpeed ms;
-    static boolean first;
 
-    public HumanMatchBot(ImageSource _is){
+    public HumanFollowBot(ImageSource _is){
 	mp = new MotorPublisher();
 	ms = new MotorSpeed();
         fire = new gun_t();
@@ -56,7 +56,6 @@ public class HumanMatchBot{
 
         is = _is;
     	wait = 0;
-        first = true;
     }
 
 
@@ -115,7 +114,7 @@ public class HumanMatchBot{
 		group --;
 		for(int i = 0; i < sub; i++ ){
 
-			//System.out.println("Count " + stats[group][i][0]);
+			System.out.println("Count " + stats[group][i][0]);
 
 			if(stats[group][i][0] > 2000/OFF){
 
@@ -134,8 +133,9 @@ public class HumanMatchBot{
 					int means[] = calcMean(group, i);
 			
 					TargetX = means[0];
+                    TargetY = means[1];
 
-					//System.out.println(means[0] + "  " + means[1]);
+					System.out.println(means[0] + "  " + means[1]);
 
 					found++;
 
@@ -267,31 +267,14 @@ public class HumanMatchBot{
 
 	}					
 	
-	static void fireOn(){
-
-        if(first){
-            fire.timestamp = TimeUtil.utime();
-            fire.fire = true;
-
-            lcm.publish("GUN", fire);
-            first = false;
-        }
-
+	static void follow(){
 		
 		int center = fmt.width / 2;
 
 		int X = TargetX - center;
+        int Y = TargetY - (fmt.height/2);
+        if((X < 20 & X > -20) & (Y < 20 &  Y > -20 )){
 
-        if(X < 20 & X > -20){
-			System.out.println("FIRE!!!!!!");
-
-			target = false;
-			goodFrames = 0;
-			badFrames = 0;
-			wait = 100;
-
-
-			ms.lock = 1;
             ms.leftMotor = 0;
             ms.rightMotor =  0;
             ms.frontMotor = 0;
@@ -299,27 +282,21 @@ public class HumanMatchBot{
 
 			mp.publish(ms);
 
-            try{Thread.sleep(3000);}
-
-            catch(Exception e){}
-
-
-			ms.lock = 2;
-
-			mp.publish(ms);
-
-            first = true;
-
 			return;
 		}
 
-        double errorX = ((double)X / fmt.width);
-        System.out.println(errorX + " Center");
+        double errorY = ((double)Y / (double)fmt.height);
+        double errorX = ((double)X / (double)fmt.width);
+        System.out.println(errorY + " Center");
 
+        double rateYLeft = (-KP_Y * errorY) + (KP_X * errorX);
+        double rateYRight = (-KP_Y * errorY) - (KP_X * errorX);
         double rate = errorX * KP_X;
 
-        ms.leftMotor = rate;
-        ms.rightMotor =  -rate;
+        System.out.println(rateYLeft + " Center");
+
+        ms.leftMotor = rateYLeft;
+        ms.rightMotor =  rateYRight;
         ms.frontMotor = rate;
         ms.backMotor =  -rate;
   
@@ -340,8 +317,6 @@ public class HumanMatchBot{
             ms.frontMotor = 1.0;
         if (ms.frontMotor < -1.0)
             ms.frontMotor = -1.0;
-
-		ms.lock = 1;
 		
 		mp.publish(ms);
 	}
@@ -365,44 +340,22 @@ public class HumanMatchBot{
 
 			printSets(1, subset1);
 
-			if( wait < 0){
+			if(badFrames > 2){
+                ms.leftMotor = 0;
+                ms.rightMotor =  0;
+                ms.frontMotor = 0;
+                ms.backMotor =  0;
 
-				if(badFrames > 2){
-					goodFrames = 0;
-					target = false;
-
-					if(ms.leftMotor != 0){
-                        ms.lock = 1;
-                	    ms.leftMotor = 0;
-                        ms.rightMotor =  0;
-                        ms.frontMotor = 0;
-                        ms.backMotor =  0;
-
-					    mp.publish(ms);
-
-					    ms.lock = 2;
-
-					    mp.publish(ms);
-                    }
-				}
-
-				if(found == 1 & ! target){
-					goodFrames++;
-					badFrames = 0;
-				}
-
-				if(found != 1)
-					badFrames++;
-
-				if(goodFrames > 5){
-					target = true;
-					goodFrames = 0;
-				}
-
-				if(target)		
-					fireOn();
+                mp.publish(ms);
 			}
-			wait--;
+
+		    if(found != 1)
+				badFrames++;
+            else	
+				follow();
+
+            System.out.println("running");
+	
         }
     }
 
@@ -434,6 +387,6 @@ public class HumanMatchBot{
         }
 
         ImageSource is = ImageSource.make(url);
-        new HumanMatchBot(is).run();
+        new HumanFollowBot(is).run();
     }
 }

@@ -20,17 +20,13 @@ import robot.lcm.*;
 
 public class TagTest
 {
-    static final double KP_Y = 4.5;
-    static final double KP_X = 1.5;
-    static final double KP_Z = 0.01783; //0.01743
-
     static final double CODE_FLAT = 0.0;
     static final double APRIL_CODE_PIXEL_HEIGHT = 0.5; //244;
-    static final double APRIL_CODE_PIXEL_WIDTH = 0.5; //350;
+    static final double APRIL_CODE_PIXEL_WIDTH = 350;
     
     static final double CODE_ANGLE_RANGE = 20;
-    static final double PIXEL_RANGE = 0.075;  //60;
-    static final double PIXEL_RANGE_WIDTH = 0.075;  //75;
+    static final double PIXEL_RANGE = 0.15; //50;
+    static final double PIXEL_RANGE_WIDTH = 75;
 
     ImageSource is;
 
@@ -128,7 +124,7 @@ public class TagTest
             int empCounter = 0;
             while (true) {
                 frmd = null;
-                for (int i = 0; i < 5; i++){
+                for (int i = 0; i < 3; i++){
                     frmd = is.getFrame();
                 }
                 if (frmd == null)
@@ -156,13 +152,15 @@ public class TagTest
                         ms.rightMotor = 0;
                         ms.leftMotor = 0;
                         mp.publish(ms);
+                        mp.publish(ms);
                         empCounter = 0;
                     }
                 }
-               
+
                 for (TagDetection d : detections) {
                     double yPix = d.cxy[1];
                     double xPix = d.cxy[0];
+
                     //5.2 inches to meters
                     double tagsize_m = 0.132;
                     //Need to figure out the proper focal length
@@ -170,61 +168,64 @@ public class TagTest
                     double M[][] = CameraUtil.homographyToPose(f, f, im.getWidth()/2, im.getHeight()/2, d.homography);
                     prev_angle = angle;
                     angle = -Math.asin(M[2][0]) * 100;
-                    //System.out.print("Angle: " + angle);
-                    
-                    double errorY = 0;
-                    //Check to see if robot is in decent range
-                    if ((yPix < (im.getHeight()*APRIL_CODE_PIXEL_HEIGHT - im.getHeight()*PIXEL_RANGE)) || 
-                        (yPix > (im.getHeight()*APRIL_CODE_PIXEL_HEIGHT + im.getHeight()*PIXEL_RANGE))){
-                        errorY = (yPix / im.getHeight()) - APRIL_CODE_PIXEL_HEIGHT;
+                    System.out.print("Angle: " + angle);
+
+
+                    //System.out.print("CenterX: " + d.cxy[0] + "   CenterY: " + d.cxy[1]);
+                    if (yPix < (APRIL_CODE_PIXEL_HEIGHT - PIXEL_RANGE)){
+                        ms.rightMotor = -1;
+                        ms.leftMotor = -1;
+                    }
+                    else if (yPix > (APRIL_CODE_PIXEL_HEIGHT + PIXEL_RANGE)){
+                        ms.rightMotor = 1;
+                        ms.leftMotor = 1;
                     }
                     else{
-                        errorY = 0;
+                        ms.rightMotor = 0;
+                        ms.leftMotor = 0;
                     }
 
-                    double errorX = 0;
-                    System.out.print("xPix: " + xPix); 
-                    //Check to see if robot is in decent range
-                    if ((xPix < (im.getWidth()*APRIL_CODE_PIXEL_WIDTH - im.getWidth()*PIXEL_RANGE_WIDTH)) || 
-                        (xPix > (im.getWidth()*APRIL_CODE_PIXEL_WIDTH + im.getWidth()*PIXEL_RANGE_WIDTH))){
-                        errorX = (xPix / im.getWidth()) - APRIL_CODE_PIXEL_WIDTH;
+
+
+                    if (xPix < (APRIL_CODE_PIXEL_WIDTH - PIXEL_RANGE_WIDTH)){
+                        ms.frontMotor = -1;
+                        ms.backMotor = -1;
+                        System.out.println("   Driving right!");
+                    }
+                    else if (xPix > (APRIL_CODE_PIXEL_WIDTH + PIXEL_RANGE_WIDTH)){
+                        ms.frontMotor = 1;
+                        ms.backMotor = 1;
+                        System.out.println("   Driving left!");
                     }
                     else{
-                        errorX = 0;
-                        System.out.println("     Good!"); 
+                        ms.frontMotor = 0;
+                        ms.backMotor = 0;
+                        System.out.println("   In a good range!");
                     }
-
-
-                    ms.leftMotor = (-KP_Y * errorY) + (KP_X * errorX);
-                    ms.rightMotor = (-KP_Y * errorY) - (KP_X * errorX);
-                    ms.frontMotor = (KP_X * errorX);
-                    ms.backMotor = -(KP_X * errorX);
-                    //ms.leftMotor = +(KP_X * errorX);
-                    //ms.rightMotor =  -(KP_X * errorX);
-                    System.out.println(" Left Motor: " + ms.leftMotor + "  Right Motor: " + ms.rightMotor); 
-                    System.out.println(" Left Motor: " + ms.leftMotor + "  Right Motor: " + ms.rightMotor); 
-                    
-                    //Check to max sure ms values are within range
-                    if (ms.rightMotor > 1.0)
-                        ms.rightMotor = 1.0;
-                    if (ms.rightMotor < -1.0)
-                        ms.rightMotor = -1.0;
-                    if (ms.leftMotor > 1.0)
-                        ms.leftMotor = 1.0;
-                    if (ms.leftMotor < -1.0)
-                        ms.leftMotor = -1.0;
-                    if (ms.frontMotor > 1.0)
-                        ms.frontMotor = 1.0;
-                    if (ms.frontMotor < -1.0)
-                        ms.frontMotor = -1.0;
-                    if (ms.backMotor > 1.0)
-                        ms.backMotor = 1.0;
-                    if (ms.backMotor < -1.0)
-                        ms.backMotor = -1.0;
-
-                    //System.out.println("Error: " + errorZ + "  Front: " + ms.frontMotor + "  Back: " + ms.backMotor); 
+                    if ((angle > 100) || (angle < -100)){
+                        System.out.println("Invalid Angle");
+                    }
+                    else{
+                        if (angle < (CODE_FLAT - CODE_ANGLE_RANGE)){
+                            ms.frontMotor = -0.9;
+                            ms.backMotor = -0.9;
+                            ms.rightMotor = -0.5;
+                            ms.leftMotor = 0.5;
+                            System.out.println("    Angling Right!");
+                        }
+                        else if (angle > (CODE_FLAT + CODE_ANGLE_RANGE)){
+                            ms.frontMotor = 0.9;
+                            ms.backMotor = 0.9;
+                            ms.rightMotor = 0.5;
+                            ms.leftMotor = -0.5;
+                            System.out.println("   Angling Left!");
+                        }
+                        else {
+                            System.out.println("   I'm good!");
+                        }
+                    }
                     mp.publish(ms);
-
+                    mp.publish(ms);
                 }
             }
         }

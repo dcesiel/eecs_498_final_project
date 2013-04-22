@@ -30,6 +30,7 @@ public class MotorPublisher
 	    long now = TimeUtil.utime();
         drive_t cmd = new drive_t();
         cmd.timestamp = now;
+        cmd.lock = motorSpeed.lock;
         cmd.front_motor = motorSpeed.frontMotor;
         cmd.back_motor = motorSpeed.backMotor;
         cmd.right_motor = motorSpeed.rightMotor;

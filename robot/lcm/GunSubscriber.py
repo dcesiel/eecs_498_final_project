@@ -1,8 +1,9 @@
 import lcm
-from lcmtypes import drive_t
+from lcmtypes import gun_t
 from pyfirmata import Arduino, util
+import time
 
-DEBUG = False
+DEBUG = True
 
 #Initialize Arduino board on ttyUSB0
 board = Arduino('/dev/ttyUSB0')
@@ -10,13 +11,13 @@ print("GunSubscriber connected to Arduino")
 
 #Initialize servo PWM
 #This sets pin 10 to a digital pwm output
-pin10 = board.get_pin('d:10:p')
+pin10 = board.get_pin('d:6:s')
 
 #Initialize digital output to start gun
 pin13 = board.get_pin('d:13:o')
 
 def handler(channel, data):
-    msg = drive_t.decode(data)
+    msg = gun_t.gun_t.decode(data)
     if DEBUG:
         print("   timestamp   = %s" % str(msg.timestamp))
         print("   fire = %s" % str(msg.fire))
